@@ -85,7 +85,7 @@ Sistema web desarrollado con CakePHP 2.10.24 y Bootstrap 5 para la gestión de u
 1. **Clonar el repositorio**
 
 ```bash
-git clone [URL-DEL-REPO]
+git clone https://github.com/tomasbeckmann/sistema-gestion-usuarios-cursos-cakephp2
 cd PruebaTecnicaEclass
 ```
 

@@ -8,9 +8,7 @@
 						<?php echo h($user['User']['nombre'] . ' ' . $user['User']['apellido']); ?>
 					</p>
 				</div>
-				<div>
-					<?php echo $this->Html->link('Cerrar Sesión', array('action' => 'logout'), array('class' => 'btn btn-danger btn-sm')); ?>
-				</div>
+
 			</div>
 
 			<?php if (empty($courses)): ?>
@@ -26,7 +24,7 @@
 				<div class="row">
 					<?php foreach ($courses as $course): ?>
 						<?php
-						
+
 						$totalCompaneros = 0;
 						if (isset($course['User'])) {
 							foreach ($course['User'] as $compañero) {

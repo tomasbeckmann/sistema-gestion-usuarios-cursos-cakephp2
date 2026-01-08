@@ -5,7 +5,7 @@
 				<?php echo $this->Html->link('← Volver a Mis Cursos', array('action' => 'index'), array('class' => 'btn btn-secondary mb-3')); ?>
 			</div>
 
-			<!-- Información del Curso -->
+
 			<div class="card mb-4">
 				<div class="card-header bg-primary text-white">
 					<h3 class="mb-0">📖 <?php echo h($course['Course']['nombre']); ?></h3>
@@ -36,7 +36,7 @@
 				</div>
 			</div>
 
-			<!-- Compañeros de Curso -->
+
 			<div class="card">
 				<div class="card-header">
 					<div class="d-flex justify-content-between align-items-center">
@@ -78,7 +78,7 @@
 </div>
 
 <script>
-	// Búsqueda de compañeros
+
 	document.getElementById('searchCompanero')?.addEventListener('input', function () {
 		const searchTerm = this.value.toLowerCase();
 		const companeros = document.querySelectorAll('.companero-item');

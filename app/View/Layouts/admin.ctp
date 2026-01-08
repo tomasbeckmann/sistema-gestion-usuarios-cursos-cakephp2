@@ -7,7 +7,7 @@
 		<?php echo $this->fetch('title'); ?> - Sistema de Gestión
 	</title>
 
-	<!-- Bootstrap CSS -->
+
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 	<?php
@@ -30,7 +30,6 @@
 </head>
 
 <body>
-	<!-- Navbar Admin -->
 	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 		<div class="container-fluid">
 			<a class="navbar-brand" href="/admin/dashboard">
@@ -102,20 +101,24 @@
 		</div>
 	</nav>
 
-	<!-- Contenido Principal -->
+
 	<div class="main-content">
-		<?php echo $this->Flash->render(); ?>
+
+		<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;" id="flash-container">
+			<?php echo $this->Session->flash(); ?>
+		</div>
+
 		<?php echo $this->fetch('content'); ?>
 	</div>
-	<!-- jQuery -->
+
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<!-- Bootstrap JS -->
+
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-	<!-- Scripts AJAX para Toggle y Notificaciones -->
+
 	<script>
 		jQuery(function ($) {
-			// ===== TOGGLE ACTIVE DE USUARIOS =====
+
 			$(document).on('click', '.btn-toggle-user', function () {
 				const btn = $(this);
 				const userId = btn.data('user-id');
@@ -158,7 +161,7 @@
 				});
 			});
 
-			// ===== TOGGLE ACTIVE DE CURSOS =====
+
 			$(document).on('click', '.btn-toggle-course', function () {
 				const btn = $(this);
 				const courseId = btn.data('course-id');
@@ -201,12 +204,12 @@
 				});
 			});
 
-			// ===== FILTROS EN TIEMPO REAL DE HISTORIAL =====
+
 			$(document).on('change', '#AuditLogUser, #AuditLogAction, #AuditLogModel', function () {
 				performAuditLogSearch();
 			});
 
-			// Función para búsqueda de logs
+
 			function performAuditLogSearch() {
 				const userFilter = $('#AuditLogUser').val() || '';
 				const actionFilter = $('#AuditLogAction').val() || '';
@@ -236,7 +239,7 @@
 				});
 			}
 
-			// ===== BÚSQUEDA EN TIEMPO REAL DE USUARIOS =====
+
 			let userSearchTimeout;
 			$('#UserSearch').on('keyup', function () {
 				clearTimeout(userSearchTimeout);
@@ -249,7 +252,7 @@
 				}
 			});
 
-			// ===== BÚSQUEDA EN TIEMPO REAL DE CURSOS =====
+
 			let courseSearchTimeout;
 			$('#CourseSearch').on('keyup', function () {
 				clearTimeout(courseSearchTimeout);
@@ -262,19 +265,19 @@
 				}
 			});
 
-			// ===== FILTROS EN TIEMPO REAL DE USUARIOS =====
+
 			$(document).on('change', '#UserRole, #UserActive', function () {
 				const searchTerm = $('#UserSearch').val() || '';
 				performUserSearch(searchTerm);
 			});
 
-			// ===== FILTROS EN TIEMPO REAL DE CURSOS =====
+
 			$(document).on('change', '#CourseActive', function () {
 				const searchTerm = $('#CourseSearch').val() || '';
 				performCourseSearch(searchTerm);
 			});
 
-			// ===== FUNCIONES DE BÚSQUEDA =====
+
 			function performUserSearch(searchTerm) {
 				const roleFilter = $('#UserRole').val() || '';
 				const activeFilter = $('#UserActive').val() || '';
@@ -329,29 +332,66 @@
 				});
 			}
 
-			// ===== FUNCIÓN DE NOTIFICACIONES =====
 			function showNotification(message, type) {
-				const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+				const alertClass = type === 'success' ? 'success' : 'danger';
 				const icon = type === 'success' ? '✅' : '❌';
 
-				const alert = $('<div class="alert ' + alertClass + ' alert-dismissible fade show mt-3" role="alert">' +
-					'<strong>' + icon + '</strong> ' + message +
-					'<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-					'</div>');
+				const toastHtml = `
+		<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+			<div class="toast show align-items-center text-white bg-${alertClass} border-0" role="alert">
+				<div class="d-flex">
+					<div class="toast-body">
+						<strong>${icon}</strong> ${message}
+					</div>
+					<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+				</div>
+			</div>
+		</div>
+	`;
 
-				$('.main-content').prepend(alert);
+				$('body').append(toastHtml);
 
 				setTimeout(function () {
-					alert.fadeOut(function () {
-						$(this).remove();
+					$('.toast').fadeOut(function () {
+						$(this).parent().remove();
 					});
 				}, 3000);
 			}
 		});
 	</script>
-</body>
+	<script>
 
-</html>
+		jQuery(function ($) {
+			$('#flash-container .message').each(function () {
+				var $msg = $(this);
+				var message = $msg.text().trim();
+				var isError = $msg.hasClass('error');
+				var isSuccess = $msg.hasClass('success');
+
+				var alertClass = isError ? 'danger' : (isSuccess ? 'success' : 'info');
+				var icon = isSuccess ? '✅' : (isError ? '❌' : 'ℹ️');
+
+				var toast = $('<div class="toast show align-items-center text-white bg-' + alertClass + ' border-0" role="alert">' +
+					'<div class="d-flex">' +
+					'<div class="toast-body">' +
+					'<strong>' + icon + '</strong> ' + message +
+					'</div>' +
+					'<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>' +
+					'</div>' +
+					'</div>');
+
+				$msg.replaceWith(toast);
+
+				setTimeout(function () {
+					var bsToast = new bootstrap.Toast(toast[0]);
+					bsToast.hide();
+					setTimeout(function () {
+						toast.remove();
+					}, 500);
+				}, 3000);
+			});
+		});
+	</script>
 </body>
 
 </html>

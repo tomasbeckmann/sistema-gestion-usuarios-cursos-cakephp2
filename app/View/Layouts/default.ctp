@@ -1,65 +1,111 @@
-<?php
-/**
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @package       app.View.Layouts
- * @since         CakePHP(tm) v 0.10.0.1076
- * @license       https://opensource.org/licenses/mit-license.php MIT License
- */
-
-$cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
-$cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
-?>
 <!DOCTYPE html>
 <html>
+
 <head>
 	<?php echo $this->Html->charset(); ?>
-	<title>
-		<?php echo $cakeDescription ?>:
-		<?php echo $this->fetch('title'); ?>
-	</title>
+	<title><?php echo $this->fetch('title'); ?> - Sistema de Gestión</title>
+
+
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 	<?php
-		echo $this->Html->meta('icon');
-
-		echo $this->Html->css('cake.generic');
-
-		echo $this->fetch('meta');
-		echo $this->fetch('css');
-		echo $this->fetch('script');
+	echo $this->Html->meta('icon');
+	echo $this->fetch('meta');
+	echo $this->fetch('css');
 	?>
+
+	<style>
+		body {
+			background-color: #f8f9fa;
+			min-height: 100vh;
+			padding-top: 70px;
+		}
+
+		.navbar {
+			box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+		}
+
+		.navbar-brand {
+			font-weight: 600;
+		}
+
+		.main-container {
+			padding: 30px 0;
+		}
+	</style>
 </head>
+
 <body>
-	<div id="container">
-		<div id="header">
-			<h1><?php echo $this->Html->link($cakeDescription, 'https://cakephp.org'); ?></h1>
-		</div>
-		<div id="content">
 
-			<?php echo $this->Flash->render(); ?>
-
-			<?php echo $this->fetch('content'); ?>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+		<div class="container-fluid">
+			<a class="navbar-brand"
+				href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'index')); ?>">
+				📚 Mis Cursos
+			</a>
+			<div class="ms-auto">
+				<span class="navbar-text text-white me-3">
+					Bienvenido, <?php echo h($this->Session->read('Auth.User.nombre')); ?>
+				</span>
+				<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'logout')); ?>"
+					class="btn btn-outline-light btn-sm">
+					Cerrar Sesión
+				</a>
+			</div>
 		</div>
-		<div id="footer">
-			<?php echo $this->Html->link(
-					$this->Html->image('cake.power.gif', array('alt' => $cakeDescription, 'border' => '0')),
-					'https://cakephp.org/',
-					array('target' => '_blank', 'escape' => false, 'id' => 'cake-powered')
-				);
+	</nav>
+
+
+	<div class="main-container">
+
+		<?php
+		$flash = $this->Session->read('Message.flash');
+		if ($flash && isset($flash['params']) && isset($flash['params']['class'])):
+			$alertClass = $flash['params']['class'] == 'error' ? 'danger' : ($flash['params']['class'] == 'success' ? 'success' : 'info');
+			$icon = $flash['params']['class'] == 'success' ? '✅' : ($flash['params']['class'] == 'error' ? '❌' : 'ℹ️');
+			$message = isset($flash['message']) ? $flash['message'] : '';
 			?>
-			<p>
-				<?php echo $cakeVersion; ?>
-			</p>
-		</div>
+			<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 60px;">
+				<div class="toast show align-items-center text-white bg-<?php echo $alertClass; ?> border-0" role="alert"
+					id="flashToast">
+					<div class="d-flex">
+						<div class="toast-body">
+							<strong><?php echo $icon; ?></strong> <?php echo h($message); ?>
+						</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto"
+							data-bs-dismiss="toast"></button>
+					</div>
+				</div>
+			</div>
+			<script>
+				setTimeout(function () {
+					var toastEl = document.getElementById('flashToast');
+					if (toastEl) {
+						var bsToast = bootstrap.Toast.getInstance(toastEl);
+						if (!bsToast) {
+							bsToast = new bootstrap.Toast(toastEl);
+						}
+						bsToast.hide();
+						setTimeout(function () {
+							if (toastEl.parentElement) {
+								toastEl.parentElement.remove();
+							}
+						}, 500);
+					}
+				}, 3000);
+			</script>
+			<?php
+			$this->Session->write('Message.flash', null);
+		endif;
+		?>
+
+		<?php echo $this->fetch('content'); ?>
 	</div>
-	<?php echo $this->element('sql_dump'); ?>
+
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<?php echo $this->fetch('script'); ?>
 </body>
+
 </html>

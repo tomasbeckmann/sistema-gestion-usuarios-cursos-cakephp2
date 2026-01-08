@@ -14,7 +14,7 @@
 			</div>
 
 			<?php if (empty($courses)): ?>
-				<!-- No tiene cursos -->
+
 				<div class="card">
 					<div class="card-body text-center py-5">
 						<h4 class="text-muted">📚 No estás inscrito en ningún curso</h4>
@@ -22,11 +22,11 @@
 					</div>
 				</div>
 			<?php else: ?>
-				<!-- Lista de cursos -->
+
 				<div class="row">
 					<?php foreach ($courses as $course): ?>
 						<?php
-						// Contar compañeros (sin contar al usuario actual)
+						
 						$totalCompaneros = 0;
 						if (isset($course['User'])) {
 							foreach ($course['User'] as $compañero) {

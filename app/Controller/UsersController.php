@@ -20,7 +20,7 @@ class UsersController extends AppController
 			if ($this->Auth->login()) {
 				$user = $this->Auth->user();
 				if ($user['role'] == 'admin') {
-					return $this->redirect(array('action' => 'dashboard')); // ← CAMBIAR AQUÍ
+					return $this->redirect(array('action' => 'dashboard'));
 				} else {
 					return $this->redirect(array('action' => 'index'));
 				}
@@ -31,36 +31,30 @@ class UsersController extends AppController
 
 	public function logout()
 	{
-		/* $this->Flash->success('Has cerrado sesión correctamente'); */
+		$this->Session->delete('Message');
 		return $this->redirect($this->Auth->logout());
 	}
 
 	public function index()
 	{
-		// Dashboard para usuarios normales
 		$userId = $this->Auth->user('id');
 
-		// Cargar el modelo Course
 		$this->loadModel('Course');
 
-		// Obtener información del usuario con sus cursos
 		$user = $this->User->find('first', array(
 			'conditions' => array('User.id' => $userId),
 			'contain' => array('Course')
 		));
 
-		// Para cada curso, obtener sus usuarios (compañeros)
 		$coursesWithUsers = array();
 		if (isset($user['Course']) && !empty($user['Course'])) {
 			foreach ($user['Course'] as $course) {
-				// Obtener el curso completo con todos sus usuarios
 				$courseComplete = $this->Course->find('first', array(
 					'conditions' => array('Course.id' => $course['id']),
 					'contain' => array('User')
 				));
 
 				if ($courseComplete) {
-					// Merge la info del curso con los usuarios
 					$course['User'] = $courseComplete['User'];
 					$coursesWithUsers[] = $course;
 				}
@@ -70,6 +64,7 @@ class UsersController extends AppController
 		$this->set('user', $user);
 		$this->set('courses', $coursesWithUsers);
 	}
+
 	public function view_course($courseId = null)
 	{
 		if (!$courseId) {
@@ -79,7 +74,6 @@ class UsersController extends AppController
 
 		$userId = $this->Auth->user('id');
 
-		// Verificar que el usuario esté inscrito en este curso
 		$this->loadModel('Course');
 		$course = $this->Course->find('first', array(
 			'conditions' => array('Course.id' => $courseId),
@@ -91,7 +85,6 @@ class UsersController extends AppController
 			return $this->redirect(array('action' => 'index'));
 		}
 
-		// Verificar que el usuario esté inscrito
 		$inscrito = false;
 		foreach ($course['User'] as $user) {
 			if ($user['id'] == $userId) {
@@ -113,36 +106,29 @@ class UsersController extends AppController
 	{
 		$this->layout = 'admin';
 
-		// Verificar que sea admin
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
 		}
 
-		// ===== ESTADÍSTICAS PARA EL DASHBOARD =====
 		$this->loadModel('Course');
 
-		// Total de usuarios
 		$totalUsuarios = $this->User->find('count');
 		$usuariosActivos = $this->User->find('count', array('conditions' => array('User.active' => 1)));
 		$usuariosInactivos = $totalUsuarios - $usuariosActivos;
 
-		// Total de cursos
 		$totalCursos = $this->Course->find('count');
 		$cursosActivos = $this->Course->find('count', array('conditions' => array('Course.active' => 1)));
 
-		// Usuarios por rol
 		$admins = $this->User->find('count', array('conditions' => array('User.role' => 'admin')));
 		$usuarios = $this->User->find('count', array('conditions' => array('User.role' => 'user')));
 
-		// Cursos con más inscritos
 		$cursosPopulares = $this->Course->find('all', array(
 			'contain' => array('User'),
 			'order' => array('Course.nombre' => 'ASC'),
 			'limit' => 10
 		));
 
-		// Preparar datos para gráfico
 		$cursosData = array();
 		foreach ($cursosPopulares as $curso) {
 			$cursosData[] = array(
@@ -152,7 +138,6 @@ class UsersController extends AppController
 			);
 		}
 
-		// Usuarios sin cursos
 		$usuariosSinCursos = $this->User->find('all', array(
 			'conditions' => array('User.role' => 'user'),
 			'contain' => array('Course')
@@ -165,7 +150,6 @@ class UsersController extends AppController
 			}
 		}
 
-		// Cursos por estado (próximos, en curso, finalizados)
 		$hoy = date('Y-m-d');
 		$cursosProximos = $this->Course->find('count', array(
 			'conditions' => array(
@@ -188,7 +172,6 @@ class UsersController extends AppController
 			)
 		));
 
-		// Enviar estadísticas a la vista
 		$this->set('stats', array(
 			'totalUsuarios' => $totalUsuarios,
 			'usuariosActivos' => $usuariosActivos,
@@ -208,16 +191,14 @@ class UsersController extends AppController
 	public function admin_dashboard()
 	{
 		$this->layout = 'admin';
-		// Verificar que sea admin
+
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
 		}
 
-		// Búsqueda y filtros
 		$conditions = array();
 
-		// Búsqueda general
 		if (!empty($this->request->query['search'])) {
 			$search = $this->request->query['search'];
 			$conditions['OR'] = array(
@@ -227,12 +208,10 @@ class UsersController extends AppController
 			);
 		}
 
-		// Filtro por role
 		if (!empty($this->request->query['role'])) {
 			$conditions['User.role'] = $this->request->query['role'];
 		}
 
-		// Filtro por estado
 		if (isset($this->request->query['active']) && $this->request->query['active'] !== '') {
 			$conditions['User.active'] = $this->request->query['active'];
 		}
@@ -256,10 +235,11 @@ class UsersController extends AppController
 		if ($this->request->is('post')) {
 			$this->User->create();
 			if ($this->User->save($this->request->data)) {
-				// AGREGAR LOG
 				$userId = $this->User->id;
 				$userName = $this->request->data['User']['nombre'] . ' ' . $this->request->data['User']['apellido'];
 				$this->AuditLog->logAction('create', 'User', $userId, "Creó el usuario: {$userName} ({$this->request->data['User']['email']})");
+
+				$this->Flash->success('Usuario creado correctamente');
 				return $this->redirect(array('action' => 'admin_dashboard'));
 			}
 			$this->Flash->error('No se pudo crear el usuario. Por favor, verifica los datos.');
@@ -269,7 +249,7 @@ class UsersController extends AppController
 	public function admin_edit($id = null)
 	{
 		$this->layout = 'admin';
-		// Verificar que sea admin
+
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
@@ -289,15 +269,14 @@ class UsersController extends AppController
 		if ($this->request->is(array('post', 'put'))) {
 			$this->User->id = $id;
 
-			// Si no se ingresó password, no actualizar ese campo
 			if (empty($this->request->data['User']['password'])) {
 				unset($this->request->data['User']['password']);
 			}
 
-			$userName = $this->request->data['User']['nombre'] . ' ' . $this->request->data['User']['apellido'];
-			$this->AuditLog->logAction('update', 'User', $id, "Editó el usuario: {$userName}");
-
 			if ($this->User->save($this->request->data)) {
+				$userName = $this->request->data['User']['nombre'] . ' ' . $this->request->data['User']['apellido'];
+				$this->AuditLog->logAction('update', 'User', $id, "Editó el usuario: {$userName}");
+
 				$this->Flash->success('Usuario actualizado correctamente');
 				return $this->redirect(array('action' => 'admin_dashboard'));
 			}
@@ -306,14 +285,12 @@ class UsersController extends AppController
 
 		if (!$this->request->data) {
 			$this->request->data = $user;
-			// Limpiar password para que no se muestre
 			unset($this->request->data['User']['password']);
 		}
 	}
 
 	public function admin_delete($id = null)
 	{
-		// Verificar que sea admin
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
@@ -321,7 +298,6 @@ class UsersController extends AppController
 
 		$this->request->allowMethod('post');
 
-		// No permitir eliminar al mismo usuario logueado
 		if ($id == $this->Auth->user('id')) {
 			$this->Flash->error('No puedes eliminar tu propia cuenta');
 			return $this->redirect(array('action' => 'admin_dashboard'));
@@ -334,7 +310,6 @@ class UsersController extends AppController
 		}
 
 		if ($this->User->delete($id)) {
-			// AGREGAR LOG
 			$userName = $user['User']['nombre'] . ' ' . $user['User']['apellido'];
 			$this->AuditLog->logAction('delete', 'User', $id, "Eliminó el usuario: {$userName} ({$user['User']['email']})");
 
@@ -348,7 +323,6 @@ class UsersController extends AppController
 
 	public function admin_toggle_active($id = null)
 	{
-		// Verificar que sea admin
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
@@ -356,13 +330,11 @@ class UsersController extends AppController
 
 		$this->request->allowMethod('post');
 
-		// Detectar si es AJAX
 		$isAjax = $this->request->is('ajax') ||
 			!empty($this->request->header('X-Requested-With')) ||
 			(isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
 				strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
 
-		// No permitir desactivar al mismo usuario logueado
 		if ($id == $this->Auth->user('id')) {
 			if ($isAjax) {
 				$this->autoRender = false;
@@ -386,7 +358,6 @@ class UsersController extends AppController
 			return $this->redirect(array('action' => 'admin_dashboard'));
 		}
 
-		// Cambiar estado
 		$newStatus = $user['User']['active'] ? 0 : 1;
 		$this->User->id = $id;
 
@@ -397,7 +368,6 @@ class UsersController extends AppController
 			$action = $newStatus ? 'activate' : 'deactivate';
 			$this->AuditLog->logAction($action, 'User', $id, "{$message}: {$userName}");
 
-			// Si es petición AJAX, responder JSON
 			if ($isAjax) {
 				$this->autoRender = false;
 				$this->response->type('json');
@@ -429,7 +399,7 @@ class UsersController extends AppController
 	public function admin_change_password($id = null)
 	{
 		$this->layout = 'admin';
-		// Verificar que sea admin
+
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
@@ -461,30 +431,24 @@ class UsersController extends AppController
 
 	public function export_users()
 	{
-		// Verificar que sea admin
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
 		}
 
-		// Obtener todos los usuarios
 		$users = $this->User->find('all', array(
 			'order' => array('User.id' => 'ASC'),
 			'contain' => array('Course')
 		));
 
-		// Configurar headers para descarga CSV
 		$this->autoRender = false;
 		$this->response->type('csv');
 		$this->response->download('usuarios_' . date('Y-m-d_His') . '.csv');
 
-		// Abrir output para escribir CSV
 		$output = fopen('php://output', 'w');
 
-		// Escribir BOM para UTF-8 (para que Excel reconozca caracteres especiales)
 		fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-		// Encabezados del CSV
 		fputcsv($output, array(
 			'ID',
 			'Nombre',
@@ -496,9 +460,7 @@ class UsersController extends AppController
 			'Fecha Creación'
 		), ';');
 
-		// Escribir datos
 		foreach ($users as $user) {
-			// Obtener nombres de cursos
 			$cursos = array();
 			if (!empty($user['Course'])) {
 				foreach ($user['Course'] as $course) {
@@ -526,16 +488,13 @@ class UsersController extends AppController
 	{
 		$this->layout = 'admin';
 
-		// Verificar que sea admin
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('action' => 'index'));
 		}
 
-		// Cargar el modelo AuditLog
 		$this->loadModel('AuditLog');
 
-		// Configurar paginación
 		$this->paginate = array(
 			'AuditLog' => array(
 				'contain' => array('User'),
@@ -544,25 +503,20 @@ class UsersController extends AppController
 			)
 		);
 
-		// Filtros
 		$conditions = array();
 
-		// Filtro por usuario
 		if (!empty($this->request->query['user_id'])) {
 			$conditions['AuditLog.user_id'] = $this->request->query['user_id'];
 		}
 
-		// Filtro por acción
 		if (!empty($this->request->query['action'])) {
 			$conditions['AuditLog.action'] = $this->request->query['action'];
 		}
 
-		// Filtro por modelo
 		if (!empty($this->request->query['model'])) {
 			$conditions['AuditLog.model'] = $this->request->query['model'];
 		}
 
-		// Filtro por fecha
 		if (!empty($this->request->query['date_from'])) {
 			$conditions['AuditLog.created >='] = $this->request->query['date_from'] . ' 00:00:00';
 		}
@@ -574,7 +528,6 @@ class UsersController extends AppController
 		$this->paginate['AuditLog']['conditions'] = $conditions;
 		$logs = $this->paginate('AuditLog');
 
-		// Obtener lista de usuarios para el filtro
 		$users = $this->User->find('list', array(
 			'conditions' => array('User.role' => 'admin'),
 			'fields' => array('User.id', 'User.email')

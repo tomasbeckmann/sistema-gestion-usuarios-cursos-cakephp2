@@ -3,7 +3,7 @@
 		<div class="col-md-12">
 
 			<h2 class="mb-4">Gestión de Usuarios</h2>
-			<!-- Búsqueda y Filtros -->
+
 			<div class="card mb-4">
 				<div class="card-body">
 					<?php echo $this->Form->create('User', array('type' => 'get', 'class' => 'row g-3')); ?>
@@ -54,7 +54,7 @@
 				</div>
 			</div>
 
-			<!-- Botón Agregar Usuario y Exportar -->
+
 			<div class="mb-3 d-flex justify-content-between">
 				<div>
 					<?php echo $this->Html->link('+ Agregar Usuario', array('action' => 'admin_add'), array('class' => 'btn btn-success')); ?>
@@ -68,7 +68,7 @@
 				</div>
 			</div>
 
-			<!-- Tabla de Usuarios -->
+
 			<div class="card">
 				<div class="card-body">
 					<table class="table table-striped table-hover">
@@ -136,7 +136,7 @@
 						</tbody>
 					</table>
 
-					<!-- Paginación -->
+
 					<?php if ($this->Paginator->hasPage(2)): ?>
 						<nav>
 							<ul class="pagination justify-content-center">

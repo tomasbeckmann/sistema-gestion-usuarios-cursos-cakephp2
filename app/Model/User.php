@@ -28,7 +28,7 @@ class User extends AppModel
 		)
 	);
 
-	// Relación muchos a muchos con Course
+
 	public $hasAndBelongsToMany = array(
 		'Course' => array(
 			'className' => 'Course',

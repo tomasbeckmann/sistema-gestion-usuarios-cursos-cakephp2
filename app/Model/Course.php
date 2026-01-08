@@ -45,7 +45,7 @@ class Course extends AppModel
 		)
 	);
 
-	// Relación muchos a muchos con User
+
 	public $hasAndBelongsToMany = array(
 		'User' => array(
 			'className' => 'User',
@@ -56,7 +56,7 @@ class Course extends AppModel
 		)
 	);
 
-	// Método para obtener el número de alumnos inscritos
+
 	public function getCuposDisponibles($courseId)
 	{
 		$course = $this->findById($courseId);
@@ -74,7 +74,7 @@ class Course extends AppModel
 		);
 	}
 
-	// Verificar si hay cupos disponibles
+
 	public function hayCuposDisponibles($courseId)
 	{
 		$cupos = $this->getCuposDisponibles($courseId);

@@ -7,7 +7,7 @@ class AppController extends Controller
 	public $components = array(
 		'Flash',
 		'Auth' => array(
-			'loginRedirect' => '/admin/dashboard',  // ← CAMBIAR
+			'loginRedirect' => '/admin/dashboard',
 			'logoutRedirect' => array('controller' => 'users', 'action' => 'login'),
 			'authenticate' => array(
 				'Form' => array(
@@ -24,13 +24,13 @@ class AppController extends Controller
 
 	public function beforeFilter()
 	{
-		// Configuración general del Auth
-		$this->Auth->allow(); // Temporalmente permitir todo para evitar loops
+
+		$this->Auth->allow();
 	}
 
 	public function isAuthorized($user)
 	{
-		// Por defecto, todos los usuarios autenticados tienen acceso
+
 		return true;
 	}
 }

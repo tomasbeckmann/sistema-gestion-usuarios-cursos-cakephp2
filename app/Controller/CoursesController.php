@@ -3,7 +3,6 @@ App::uses('AppController', 'Controller');
 
 class CoursesController extends AppController
 {
-
 	public $paginate = array(
 		'limit' => 10,
 		'order' => array('Course.created' => 'desc')
@@ -12,20 +11,16 @@ class CoursesController extends AppController
 	public function beforeFilter()
 	{
 		parent::beforeFilter();
-		// Solo admins pueden gestionar cursos
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			$this->redirect(array('controller' => 'users', 'action' => 'index'));
 		}
 
-		// Usar layout de admin para todas las vistas
 		$this->layout = 'admin';
 	}
 
-	// Listar todos los cursos (Admin)
 	public function admin_index()
 	{
-		// Búsqueda
 		$conditions = array();
 
 		if (!empty($this->request->query['search'])) {
@@ -36,19 +31,17 @@ class CoursesController extends AppController
 			);
 		}
 
-		// Filtro por estado
 		if (isset($this->request->query['active']) && $this->request->query['active'] !== '') {
 			$conditions['Course.active'] = $this->request->query['active'];
 		}
 
 		$this->paginate['conditions'] = $conditions;
-		$this->paginate['contain'] = array('User'); // Cargar usuarios relacionados
+		$this->paginate['contain'] = array('User');
 
 		$courses = $this->paginate('Course');
 		$this->set('courses', $courses);
 	}
 
-	// Crear curso
 	public function admin_add()
 	{
 		$this->layout = 'admin';
@@ -56,7 +49,6 @@ class CoursesController extends AppController
 		if ($this->request->is('post')) {
 			$this->Course->create();
 			if ($this->Course->save($this->request->data)) {
-				// AGREGAR LOG
 				$courseId = $this->Course->id;
 				$courseName = $this->request->data['Course']['nombre'];
 				$this->AuditLog->logAction('create', 'Course', $courseId, "Creó el curso: {$courseName}");
@@ -68,7 +60,6 @@ class CoursesController extends AppController
 		}
 	}
 
-	// Editar curso
 	public function admin_edit($id = null)
 	{
 		if (!$id) {
@@ -103,7 +94,6 @@ class CoursesController extends AppController
 	{
 		$this->request->allowMethod('post');
 
-		// Obtener el curso antes de eliminarlo
 		$course = $this->Course->findById($id);
 		if (!$course) {
 			$this->Flash->error('Curso no encontrado');
@@ -111,11 +101,10 @@ class CoursesController extends AppController
 		}
 
 		if ($this->Course->delete($id)) {
-			// AGREGAR LOG
 			$courseName = $course['Course']['nombre'];
 			$this->AuditLog->logAction('delete', 'Course', $id, "Eliminó el curso: {$courseName}");
 
-			$this->Flash->success('Curso eliminado correctamente');
+			$this->Flash->success('✅ Curso eliminado correctamente');
 		} else {
 			$this->Flash->error('No se pudo eliminar el curso');
 		}
@@ -123,12 +112,10 @@ class CoursesController extends AppController
 		return $this->redirect(array('action' => 'admin_index'));
 	}
 
-	// Activar/Desactivar curso
 	public function admin_toggle_active($id = null)
 	{
 		$this->request->allowMethod('post');
 
-		// Detectar si es AJAX
 		$isAjax = $this->request->is('ajax') ||
 			!empty($this->request->header('X-Requested-With')) ||
 			(isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
@@ -154,7 +141,7 @@ class CoursesController extends AppController
 			$courseName = $course['Course']['nombre'];
 			$action = $newStatus ? 'activate' : 'deactivate';
 			$this->AuditLog->logAction($action, 'Course', $id, "{$message}: {$courseName}");
-			// Si es petición AJAX, responder JSON
+
 			if ($isAjax) {
 				$this->autoRender = false;
 				$this->response->type('json');
@@ -182,7 +169,7 @@ class CoursesController extends AppController
 
 		return $this->redirect(array('action' => 'admin_index'));
 	}
-	// Ver detalle del curso con usuarios inscritos
+
 	public function admin_view($id = null)
 	{
 		if (!$id) {
@@ -200,13 +187,12 @@ class CoursesController extends AppController
 			return $this->redirect(array('action' => 'admin_index'));
 		}
 
-		// Obtener usuarios NO inscritos en este curso
 		$inscritosIds = array();
 		foreach ($course['User'] as $user) {
 			$inscritosIds[] = $user['id'];
 		}
 
-		$conditions = array('User.role' => 'user'); // Solo usuarios normales
+		$conditions = array('User.role' => 'user');
 		if (!empty($inscritosIds)) {
 			$conditions['User.id NOT'] = $inscritosIds;
 		}
@@ -223,8 +209,6 @@ class CoursesController extends AppController
 		$this->set('cuposInfo', $cuposInfo);
 	}
 
-	// Agregar usuario al curso
-	// Agregar usuarios al curso (múltiples)
 	public function admin_add_user($courseId = null)
 	{
 		$this->request->allowMethod('post');
@@ -236,16 +220,14 @@ class CoursesController extends AppController
 
 		$userIds = $this->request->data['user_ids'];
 
-		// Verificar cupos disponibles
 		$cuposInfo = $this->Course->getCuposDisponibles($courseId);
 		$usuariosAgregar = count($userIds);
 
 		if ($cuposInfo['disponibles'] < $usuariosAgregar) {
-			$this->Flash->error('No hay suficientes cupos. Disponibles: ' . $cuposInfo['disponibles'] . ', Intentando agregar: ' . $usuariosAgregar);
+			$this->Flash->error('⚠️ No hay suficientes cupos. Disponibles: ' . $cuposInfo['disponibles'] . ', Intentando agregar: ' . $usuariosAgregar);
 			return $this->redirect(array('action' => 'admin_view', $courseId));
 		}
 
-		// Usar el modelo CoursesUser para insertar directamente en la tabla intermedia
 		App::uses('AppModel', 'Model');
 		$CoursesUser = new AppModel(false, 'courses_users');
 
@@ -281,7 +263,6 @@ class CoursesController extends AppController
 		return $this->redirect(array('action' => 'admin_view', $courseId));
 	}
 
-	// Quitar usuario del curso
 	public function admin_remove_user($courseId = null, $userId = null)
 	{
 		$this->request->allowMethod('post');
@@ -291,7 +272,6 @@ class CoursesController extends AppController
 			return $this->redirect(array('action' => 'admin_index'));
 		}
 
-		// Eliminar la relación de la tabla intermedia
 		$this->Course->User->CoursesUser = ClassRegistry::init('CoursesUser');
 
 		$deleted = $this->Course->User->CoursesUser->deleteAll(array(
@@ -300,14 +280,13 @@ class CoursesController extends AppController
 		));
 
 		if ($deleted) {
-			// AGREGAR LOG
 			$course = $this->Course->findById($courseId);
 			$user = $this->Course->User->findById($userId);
 			$courseName = $course['Course']['nombre'];
 			$userName = $user['User']['nombre'] . ' ' . $user['User']['apellido'];
 			$this->AuditLog->logAction('remove_user', 'Course', $courseId, "Removió a {$userName} del curso: {$courseName}");
 
-			$this->Flash->success('Usuario removido del curso');
+			$this->Flash->success('✅ Usuario removido del curso');
 		} else {
 			$this->Flash->error('No se pudo remover el usuario');
 		}
@@ -317,30 +296,24 @@ class CoursesController extends AppController
 
 	public function export_courses()
 	{
-		// Verificar que sea admin
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('controller' => 'users', 'action' => 'index'));
 		}
 
-		// Obtener todos los cursos con usuarios
 		$courses = $this->Course->find('all', array(
 			'order' => array('Course.id' => 'ASC'),
 			'contain' => array('User')
 		));
 
-		// Configurar headers para descarga CSV
 		$this->autoRender = false;
 		$this->response->type('csv');
 		$this->response->download('cursos_' . date('Y-m-d_His') . '.csv');
 
-		// Abrir output
 		$output = fopen('php://output', 'w');
 
-		// BOM para UTF-8
 		fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-		// Encabezados
 		fputcsv($output, array(
 			'ID',
 			'Nombre',
@@ -354,7 +327,6 @@ class CoursesController extends AppController
 			'Fecha Creación'
 		), ';');
 
-		// Escribir datos
 		foreach ($courses as $course) {
 			$inscritos = count($course['User']);
 			$disponibles = $course['Course']['cupo_maximo'] - $inscritos;
@@ -378,7 +350,6 @@ class CoursesController extends AppController
 
 	public function export_course_students($courseId = null)
 	{
-		// Verificar que sea admin
 		if ($this->Auth->user('role') != 'admin') {
 			$this->Flash->error('No tienes permisos para acceder');
 			return $this->redirect(array('controller' => 'users', 'action' => 'index'));
@@ -389,7 +360,6 @@ class CoursesController extends AppController
 			return $this->redirect(array('action' => 'admin_index'));
 		}
 
-		// Obtener curso con sus estudiantes
 		$course = $this->Course->find('first', array(
 			'conditions' => array('Course.id' => $courseId),
 			'contain' => array('User')
@@ -400,23 +370,19 @@ class CoursesController extends AppController
 			return $this->redirect(array('action' => 'admin_index'));
 		}
 
-		// Configurar headers
 		$this->autoRender = false;
 		$this->response->type('csv');
 		$filename = 'estudiantes_' . preg_replace('/[^a-z0-9]/i', '_', $course['Course']['nombre']) . '_' . date('Y-m-d_His') . '.csv';
 		$this->response->download($filename);
 
-		// Abrir output
 		$output = fopen('php://output', 'w');
 
-		// BOM para UTF-8
 		fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-		// Encabezados
 		fputcsv($output, array(
 			'Curso: ' . $course['Course']['nombre']
 		), ';');
-		fputcsv($output, array(''), ';'); // Línea en blanco
+		fputcsv($output, array(''), ';');
 		fputcsv($output, array(
 			'ID',
 			'Nombre',
@@ -425,9 +391,8 @@ class CoursesController extends AppController
 			'Estado'
 		), ';');
 
-		// Escribir estudiantes
 		foreach ($course['User'] as $user) {
-			if ($user['role'] == 'user') { // Solo usuarios normales
+			if ($user['role'] == 'user') {
 				fputcsv($output, array(
 					$user['id'],
 					$user['nombre'],

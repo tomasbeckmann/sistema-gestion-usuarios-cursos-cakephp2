@@ -4,7 +4,7 @@ Sistema web desarrollado con CakePHP 2.10.24 y Bootstrap 5 para la gestión de u
 
 ## 🚀 Demo en Vivo
 
-**URL:** [Próximamente - En proceso de deploy]
+**URL:** (https://plataforma-gestion-cursos.gt.tc)
 
 **Usuarios de prueba:**
 

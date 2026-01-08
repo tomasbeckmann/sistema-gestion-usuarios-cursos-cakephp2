@@ -8,7 +8,7 @@
 				</div>
 			</div>
 
-			<!-- Información del Curso -->
+
 			<div class="card mb-4">
 				<div class="card-header">
 					<h4>Información del Curso</h4>
@@ -50,7 +50,7 @@
 			</div>
 
 			<div class="row">
-				<!-- Usuarios Inscritos -->
+
 				<div class="col-md-7">
 					<div class="card">
 						<div class="card-header">
@@ -100,7 +100,7 @@
 					</div>
 				</div>
 
-				<!-- Agregar Usuario -->
+
 				<div class="col-md-5">
 					<div class="card">
 						<div class="card-header">
@@ -126,7 +126,7 @@
 								<div class="mb-3">
 									<label class="form-label">Seleccionar Usuarios</label>
 
-									<!-- Dropdown con checkboxes -->
+
 									<div class="dropdown w-100">
 										<button
 											class="btn btn-outline-secondary dropdown-toggle w-100 d-flex justify-content-between align-items-center"
@@ -138,7 +138,7 @@
 
 										<div class="dropdown-menu w-100 p-3" aria-labelledby="dropdownUsuarios"
 											style="max-height: 400px; overflow-y: auto;">
-											<!-- Búsqueda dentro del dropdown -->
+
 											<div class="mb-2">
 												<input type="text" class="form-control form-control-sm"
 													id="searchInDropdown" placeholder="Buscar usuario..."
@@ -147,7 +147,7 @@
 
 											<hr class="dropdown-divider">
 
-											<!-- Checkbox para seleccionar todos -->
+
 											<div class="form-check mb-2 pb-2 border-bottom">
 												<input class="form-check-input" type="checkbox" id="selectAll"
 													onclick="event.stopPropagation();">
@@ -156,7 +156,7 @@
 												</label>
 											</div>
 
-											<!-- Lista de usuarios -->
+
 											<div id="userList">
 												<?php foreach ($usuariosDisponibles as $usuario): ?>
 													<div class="form-check user-item"
@@ -202,7 +202,7 @@
 						</div>
 					</div>
 
-					<!-- Búsqueda en el curso (próximamente) -->
+
 					<div class="card mt-3">
 						<div class="card-header">
 							<h5>Buscar en este curso</h5>
@@ -220,7 +220,7 @@
 </div>
 
 <script>
-	// Búsqueda en tiempo real de usuarios inscritos en la tabla
+
 	document.getElementById('searchUser')?.addEventListener('keyup', function () {
 		const searchTerm = this.value.toLowerCase();
 		const rows = document.querySelectorAll('table tbody tr');
@@ -231,7 +231,7 @@
 		});
 	});
 
-	// Funcionalidad del dropdown con checkboxes
+
 	document.addEventListener('DOMContentLoaded', function () {
 		const selectAllCheckbox = document.getElementById('selectAll');
 		const userCheckboxes = document.querySelectorAll('.user-checkbox');
@@ -241,15 +241,14 @@
 		const searchInDropdown = document.getElementById('searchInDropdown');
 		const cuposDisponibles = <?php echo $cuposInfo['disponibles']; ?>;
 
-		// Función para actualizar el texto del dropdown y contador
-		// Función para actualizar el contador (sin cambiar el texto del dropdown)
+
 		function updateDropdownText() {
 			const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
 			const count = checkedBoxes.length;
 
 			selectedCount.textContent = count;
 
-			// Mantener siempre el mismo texto en el dropdown
+
 			dropdownText.textContent = 'Seleccionar usuarios...';
 
 			if (count === 0) {
@@ -259,7 +258,7 @@
 				btnAgregar.classList.add('btn-success');
 				btnAgregar.classList.remove('btn-secondary');
 			} else {
-				// Validar cupos
+
 				if (count > cuposDisponibles) {
 					selectedCount.classList.add('text-danger');
 					selectedCount.classList.remove('text-success');
@@ -278,7 +277,7 @@
 			}
 		}
 
-		// Seleccionar/deseleccionar todos
+
 		selectAllCheckbox?.addEventListener('change', function (e) {
 			e.stopPropagation();
 			const visibleCheckboxes = document.querySelectorAll('.user-item:not([style*="display: none"]) .user-checkbox');
@@ -288,18 +287,18 @@
 			updateDropdownText();
 		});
 
-		// Actualizar cuando se marca un checkbox individual
+
 		userCheckboxes.forEach(checkbox => {
 			checkbox.addEventListener('change', function (e) {
 				e.stopPropagation();
 				updateDropdownText();
 
-				// Si se desmarca uno, desmarcar "Seleccionar Todos"
+
 				if (!this.checked) {
 					selectAllCheckbox.checked = false;
 				}
 
-				// Si todos están marcados, marcar "Seleccionar Todos"
+
 				const visibleCheckboxes = document.querySelectorAll('.user-item:not([style*="display: none"]) .user-checkbox');
 				const allChecked = Array.from(visibleCheckboxes).every(cb => cb.checked);
 				if (allChecked && visibleCheckboxes.length > 0) {
@@ -308,7 +307,7 @@
 			});
 		});
 
-		// Búsqueda dentro del dropdown
+
 		searchInDropdown?.addEventListener('input', function (e) {
 			e.stopPropagation();
 			const searchTerm = this.value.toLowerCase();
@@ -324,12 +323,12 @@
 			});
 		});
 
-		// Prevenir que el dropdown se cierre al hacer click dentro
+
 		document.querySelector('.dropdown-menu')?.addEventListener('click', function (e) {
 			e.stopPropagation();
 		});
 
-		// Validar antes de enviar
+
 		document.getElementById('formAgregarUsuarios')?.addEventListener('submit', function (e) {
 			const checked = document.querySelectorAll('.user-checkbox:checked').length;
 
@@ -346,7 +345,7 @@
 			}
 		});
 
-		// Inicializar texto
+
 		updateDropdownText();
 	});
 </script>

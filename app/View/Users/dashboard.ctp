@@ -1,9 +1,9 @@
 <div class="container-fluid mt-4">
 	<h2 class="mb-4">📊 Dashboard de Administración</h2>
 
-	<!-- ESTADÍSTICAS PRINCIPALES -->
+
 	<div class="row mb-4">
-		<!-- Tarjeta: Total Usuarios -->
+
 		<div class="col-lg-4 col-md-6 mb-3">
 			<div class="card text-white bg-primary h-100">
 				<div class="card-body">
@@ -28,7 +28,7 @@
 			</div>
 		</div>
 
-		<!-- Tarjeta: Total Cursos -->
+
 		<div class="col-lg-4 col-md-6 mb-3">
 			<div class="card text-white bg-success h-100">
 				<div class="card-body">
@@ -52,7 +52,7 @@
 		</div>
 
 
-		<!-- Tarjeta: Usuarios Sin Cursos -->
+
 		<div class="col-lg-4 col-md-6 mb-3">
 			<div class="card text-white bg-warning h-100">
 				<div class="card-body">
@@ -74,7 +74,7 @@
 		</div>
 	</div>
 
-	<!-- ESTADO DE CURSOS -->
+
 	<div class="row mb-4">
 		<div class="col-lg-4 col-md-4 mb-3">
 			<div class="card border-primary">
@@ -105,9 +105,9 @@
 		</div>
 	</div>
 
-	<!-- GRÁFICOS -->
+
 	<div class="row">
-		<!-- Gráfico de Inscripciones -->
+
 		<div class="mb-4">
 			<div class="card">
 				<div class="card-header bg-white">
@@ -124,13 +124,13 @@
 
 </div>
 
-<!-- Scripts para Chart.js -->
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
 <script>
 	document.addEventListener('DOMContentLoaded', function () {
-		// ===== GRÁFICO DE BARRAS: OCUPACIÓN DE CURSOS =====
+
 		const cursosData = <?php echo json_encode($stats['cursosData']); ?>;
 
 		const labels = cursosData.map(c => c.nombre);
@@ -181,7 +181,7 @@
 			}
 		});
 
-		// ===== GRÁFICO DE PASTEL: DISTRIBUCIÓN POR ROL =====
+
 		const ctx2 = document.getElementById('rolesChart').getContext('2d');
 		new Chart(ctx2, {
 			type: 'doughnut',

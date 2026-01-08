@@ -1,8 +1,6 @@
 <div class="container-fluid mt-4">
 	<h2 class="mb-4">📋 Historial de Cambios</h2>
 
-	<!-- Filtros -->
-	<!-- Filtros -->
 	<div class="card mb-4">
 		<div class="card-body">
 			<?php echo $this->Form->create('AuditLog', array('type' => 'get', 'class' => 'row g-3')); ?>
@@ -65,7 +63,7 @@
 			<?php echo $this->Form->end(); ?>
 		</div>
 	</div>
-	<!-- Tabla de Logs -->
+
 	<div class="card">
 		<div class="card-body">
 			<table class="table table-striped table-hover">
@@ -87,7 +85,7 @@
 					<?php else: ?>
 						<?php foreach ($logs as $log): ?>
 							<?php
-							// Definir badge según la acción
+
 							$badgeClass = 'bg-secondary';
 							$icon = '📝';
 
@@ -158,7 +156,7 @@
 				</tbody>
 			</table>
 
-			<!-- Paginación -->
+		
 			<?php if ($this->Paginator->hasPage(2)): ?>
 				<nav>
 					<ul class="pagination justify-content-center">
